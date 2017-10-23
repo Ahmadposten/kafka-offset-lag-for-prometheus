@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"math"
+	"math/rand"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -37,8 +39,8 @@ func main() {
 	go func() {
 		var cycle uint8
 		config := sarama.NewConfig()
-		config.ClientID = "kafka-offset-lag-for-prometheus"
-		config.Version = sarama.V0_9_0_0
+		config.ClientID = fmt.Sprintf("kafka-offset-lag-for-prometheus_%d", rand.Intn(100))
+		config.Version = sarama.V0_10_2_0
 		client, err := sarama.NewClient(strings.Split(*kafkaBrokers, ","), config)
 
 		if err != nil {
@@ -77,6 +79,7 @@ func main() {
 					toff, err := client.GetOffset(topic, partition, sarama.OffsetNewest)
 					if err != nil {
 						log.Printf("Problem fetching offset for topic '%s', partition '%d'", topic, partition)
+						log.Println(err.Error())
 						continue
 					}
 					topicSet[topic][partition] = toff
